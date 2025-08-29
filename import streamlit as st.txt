@@ -1,0 +1,42 @@
+import streamlit as st
+import json
+
+st.set_page_config(page_title="Small LLM Chatbot (SiS + Cortex)", page_icon="🤖", layout="centered")
+st.title("🤖 ChatBot with Voice Capture")
+
+SMALL_MODEL = "llama3-8b"
+SYSTEM_PROMPT = "Answer in English, concisely, with brief code when useful."
+
+# --- Init chat history ---
+def init_history():
+    st.session_state.messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "assistant", "content": "Hi! Ask me anything by typing or speaking."},
+    ]
+
+if "messages" not in st.session_state:
+    init_history()
+
+# --- Display history ---
+for m in st.session_state.messages:
+    if m["role"] == "system":
+        continue
+    with st.chat_message(m["role"]):
+        st.write(m["content"])
+
+# --- Voice Input (define BEFORE using) ---
+st.subheader("🎙️ Speak your question")
+audio = st.audio_input("Record your voice", key="voice_input")
+
+if audio is not None:
+    st.info("✅ Audio recorded. (STT not available inside Snowflake without external API)")
+    # optional: save to stage later
+
+# --- Text Input ---
+prompt = st.chat_input("Type your question…")
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.write(prompt)
+
+    # (Snowflake Cortex query same as your existing code…)
